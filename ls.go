@@ -13,7 +13,7 @@ Long description of the ls command
 	Run: runLs,
 }
 
-func runLs(cmd *Command, args []string) int {
+func runLs(cmd *Command, args []string) error {
 	fmt.Println("ls command")
-	return 0
+	return nil
 }
