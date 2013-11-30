@@ -4,9 +4,9 @@ import (
 	"fmt"
 )
 
-var cmdLs = &Command {
+var cmdLs = &Command{
 	UsageLine: "ls [server]",
-	Short: "Short description of the ls command",
+	Short:     "Short description of the ls command",
 	Long: `
 Long description of the ls command
 `,
