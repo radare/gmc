@@ -43,11 +43,10 @@ func (c *Command) Name() string {
 	return name
 }
 
-// Usage prints the command usage message and exits with code 2
+// Usage prints the command usage message
 func (c *Command) Usage() {
 	fmt.Fprintf(os.Stderr, "usage: %s\n\n", c.UsageLine)
 	fmt.Fprintf(os.Stderr, "%s\n", c.Long)
-	os.Exit(1)
 }
 
 // Commands lists the available commands and help topics.
@@ -63,10 +62,12 @@ func main() {
 	args := flag.Args()
 	if len(args) < 1 {
 		usage()
+		os.Exit(1)
 	}
 
 	if args[0] == "help" {
 		help(args[1:])
+		os.Exit(1)
 	}
 
 	for _, cmd := range commands {
@@ -110,16 +111,16 @@ func tmpl(w io.Writer, text string, data interface{}) {
 
 func usage() {
 	tmpl(os.Stderr, usageTemplate, commands)
-	os.Exit(1)
 }
 
 func help(args []string) {
 	if len(args) == 0 {
 		usage()
+		return
 	}
 	if len(args) != 1 {
 		fmt.Fprintf(os.Stderr, "usage: gmc help command\n\nToo many arguments given.\n")
-		os.Exit(1)
+		return
 	}
 
 	arg := args[0]
@@ -127,10 +128,9 @@ func help(args []string) {
 	for _, cmd := range commands {
 		if cmd.Name() == arg {
 			tmpl(os.Stdout, helpTemplate, cmd)
-			os.Exit(1)
+			return
 		}
 	}
 
 	fmt.Fprintf(os.Stderr, "Unknown help topic %#q. Run 'gmc help'.\n", arg)
-	os.Exit(1)
 }
