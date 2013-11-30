@@ -1,0 +1,4 @@
+Go Mail Client
+==============
+
+WIP
