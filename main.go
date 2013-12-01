@@ -9,51 +9,10 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 	"text/template"
+
+	"github.com/radare/gmc/command"
 )
-
-// A Command is an implementation of a gmc command
-type Command struct {
-	// Run runs the command.
-	// The args are the arguments after the command name.
-	Run func(cmd *Command, args []string) error
-
-	// UsageLine is the one-line usage message.
-	// The first word in the line is taken to be the command name.
-	UsageLine string
-
-	// Short is the short description shown in the 'gmc help' output.
-	Short string
-
-	// Long is the long message shown in the 'gmc help <this-command>' output.
-	Long string
-
-	// Flag is a set of flags specific to this command.
-	Flag flag.FlagSet
-}
-
-// Name returns the command's name: the first word in the usage line.
-func (c *Command) Name() string {
-	name := c.UsageLine
-	i := strings.Index(name, " ")
-	if i >= 0 {
-		name = name[:i]
-	}
-	return name
-}
-
-// Usage prints the command usage message
-func (c *Command) Usage() {
-	fmt.Fprintf(os.Stderr, "usage: %s\n\n", c.UsageLine)
-	fmt.Fprintf(os.Stderr, "%s\n", c.Long)
-}
-
-// Commands lists the available commands and help topics.
-// The order here is the order in which they are printed by 'gmc help'.
-var commands = []*Command{
-	cmdLs,
-}
 
 func main() {
 	flag.Usage = usage
@@ -70,9 +29,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	for _, cmd := range commands {
+	for _, cmd := range command.Commands {
 		if cmd.Name() == args[0] && cmd.Run != nil {
-			cmd.Flag.Usage = func() { cmd.Usage() }
+			cmd.Flag.Usage = func() { cmd.Usage() ; os.Exit(1) }
 			cmd.Flag.Parse(args[1:])
 			args = cmd.Flag.Args()
 			err := cmd.Run(cmd, args)
@@ -115,7 +74,7 @@ func tmpl(w io.Writer, text string, data interface{}) {
 }
 
 func usage() {
-	tmpl(os.Stderr, usageTemplate, commands)
+	tmpl(os.Stderr, usageTemplate, command.Commands)
 }
 
 func help(args []string) {
@@ -130,7 +89,7 @@ func help(args []string) {
 
 	arg := args[0]
 
-	for _, cmd := range commands {
+	for _, cmd := range command.Commands {
 		if cmd.Name() == arg {
 			tmpl(os.Stdout, helpTemplate, cmd)
 			return

@@ -1,4 +1,4 @@
-package main
+package command
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ var cmdLs = &Command{
 	Short:     "Short description of the ls command",
 	Long: `
 Long description of the ls command
-`,
+	`,
 	Run: runLs,
 }
 
