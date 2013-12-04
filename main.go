@@ -31,7 +31,7 @@ func main() {
 
 	for _, cmd := range command.Commands {
 		if cmd.Name() == args[0] && cmd.Run != nil {
-			cmd.Flag.Usage = func() { cmd.Usage() ; os.Exit(1) }
+			cmd.Flag.Usage = func() { cmd.Usage(); os.Exit(1) }
 			cmd.Flag.Parse(args[1:])
 			args = cmd.Flag.Args()
 			err := cmd.Run(cmd, args)
@@ -44,8 +44,43 @@ func main() {
 		}
 	}
 
-	fmt.Fprintf(os.Stderr, "gmc: unknown subcommand %q\nRun 'gmc help' for usage.\n", args[0])
+	fmt.Fprintf(os.Stderr, "gmc: unknown subcommand %q\nRun 'gmc help' for usage.\n\n", args[0])
 	os.Exit(1)
+}
+
+func usage() {
+	tmpl(os.Stderr, usageTemplate, command.Commands)
+}
+
+func help(args []string) {
+	if len(args) == 0 {
+		usage()
+		return
+	}
+	if len(args) != 1 {
+		fmt.Fprintf(os.Stderr, "usage: gmc help command\n\nToo many arguments given.\n\n")
+		return
+	}
+
+	arg := args[0]
+
+	for _, cmd := range command.Commands {
+		if cmd.Name() == arg {
+			tmpl(os.Stdout, helpTemplate, cmd)
+			return
+		}
+	}
+
+	fmt.Fprintf(os.Stderr, "Unknown help topic %#q. Run 'gmc help'.\n", arg)
+}
+
+// tmpl executes the given template text on data, writing the result to w.
+func tmpl(w io.Writer, text string, data interface{}) {
+	t := template.New("top")
+	template.Must(t.Parse(text))
+	if err := t.Execute(w, data); err != nil {
+		panic(err)
+	}
 }
 
 var usageTemplate = `gmc is a full featured commandline Unix like mail client
@@ -63,38 +98,3 @@ Use "gmc help [command]" for more information about a command.
 var helpTemplate = `usage: gmc {{.UsageLine}}
 {{.Long}}
 `
-
-// tmpl executes the given template text on data, writing the result to w.
-func tmpl(w io.Writer, text string, data interface{}) {
-	t := template.New("top")
-	template.Must(t.Parse(text))
-	if err := t.Execute(w, data); err != nil {
-		panic(err)
-	}
-}
-
-func usage() {
-	tmpl(os.Stderr, usageTemplate, command.Commands)
-}
-
-func help(args []string) {
-	if len(args) == 0 {
-		usage()
-		return
-	}
-	if len(args) != 1 {
-		fmt.Fprintf(os.Stderr, "usage: gmc help command\n\nToo many arguments given.\n")
-		return
-	}
-
-	arg := args[0]
-
-	for _, cmd := range command.Commands {
-		if cmd.Name() == arg {
-			tmpl(os.Stdout, helpTemplate, cmd)
-			return
-		}
-	}
-
-	fmt.Fprintf(os.Stderr, "Unknown help topic %#q. Run 'gmc help'.\n", arg)
-}
