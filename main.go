@@ -10,8 +10,7 @@ import (
 	"io"
 	"os"
 	"text/template"
-
-	"github.com/radare/gmc/command"
+	"./command"
 )
 
 func main() {
